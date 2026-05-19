@@ -1,0 +1,16 @@
+# Large Binaries
+*.zip
+*.exe
+*.msi
+
+# Databases
+*.db
+*.db-journal
+
+# Project Folders
+aqua-management-system/target/
+aqua-management-system/jpackage_input/
+aqua-management-system/build_dist/
+
+# Logs
+*.log
