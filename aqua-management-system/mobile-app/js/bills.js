@@ -671,5 +671,94 @@ const Bills = {
     } catch (e) {
       App.toast('Operation failed: ' + e.message, 'warning');
     }
+  },
+
+  async showBulkBillingModal() {
+    const curMonth = parseInt(document.getElementById('billMonth').value);
+    const curYear = parseInt(document.getElementById('billYear').value);
+    
+    // We need to fetch the unbilled list for the current month
+    const startDate = `${curYear}-${String(curMonth).padStart(2,'0')}-01`;
+    const nextM = curMonth === 12 ? 1 : curMonth + 1;
+    const nextY = curMonth === 12 ? curYear + 1 : curYear;
+    const endDate = `${nextY}-${String(nextM).padStart(2,'0')}-01`;
+    
+    const { data: dels } = await supabase.from('deliveries').select('*').gte('delivery_date', startDate).lt('delivery_date', endDate);
+    const { data: bills } = await supabase.from('bills').select('*').eq('bill_month', curMonth).eq('bill_year', curYear);
+    
+    const delMap = {};
+    (dels || []).forEach(d => {
+      if (!delMap[d.customer_id]) delMap[d.customer_id] = { jars: 0, bottles: 0 };
+      delMap[d.customer_id].jars += (d.jar_qty || 0);
+      delMap[d.customer_id].bottles += (d.bottle_qty || 0);
+    });
+    
+    const billedIds = new Set((bills || []).map(b => b.customer_id));
+    const activeIds = Object.keys(delMap).map(Number);
+    const unbilledIds = activeIds.filter(id => !billedIds.has(id));
+    
+    if (unbilledIds.length === 0) {
+      App.toast('All active customers are already billed!', 'success');
+      return;
+    }
+
+    window.executeMobileBulkBilling = async function() {
+        App.closeModal();
+        App.toast('Processing ' + unbilledIds.length + ' bills...', 'info');
+        
+        // Find previous month to fetch rates
+        const prevM = curMonth === 1 ? 12 : curMonth - 1;
+        const prevY = curMonth === 1 ? curYear - 1 : curYear;
+        const { data: prevBills } = await supabase.from('bills').select('customer_id, jar_rate, bottle_rate').eq('bill_month', prevM).eq('bill_year', prevY);
+        
+        const rateMap = {};
+        (prevBills || []).forEach(b => {
+           rateMap[b.customer_id] = { jar: b.jar_rate, bottle: b.bottle_rate };
+        });
+
+        let successCount = 0;
+        for (let cid of unbilledIds) {
+            const qty = delMap[cid];
+            // Default to 40/20 if no previous history
+            const jarRate = rateMap[cid] ? rateMap[cid].jar : 40;
+            const botRate = rateMap[cid] ? rateMap[cid].bottle : 20;
+            const jA = qty.jars * jarRate;
+            const bA = qty.bottles * botRate;
+            const total = jA + bA;
+            
+            const res = await OfflineVault.safeInsert('bills', {
+              id: Math.floor(Date.now() / 1000) + successCount,
+              customer_id: cid,
+              bill_month: curMonth,
+              bill_year: curYear,
+              total_jars: qty.jars,
+              total_bottles: qty.bottles,
+              jar_rate: jarRate,
+              bottle_rate: botRate,
+              jar_amount: jA,
+              bottle_amount: bA,
+              grand_total: total,
+              status: 'PENDING',
+              generated_at: new Date().toISOString()
+            });
+            
+            if (!res.error) successCount++;
+        }
+        
+        App.toast('Bulk generation complete: ' + successCount + ' generated.', 'success');
+        Bills.load();
+    };
+
+    App.showModal(`
+      <div class="modal-title"><i data-lucide="zap"></i> Auto Bulk Billing</div>
+      <div style="background:var(--bg-slate); border:1px solid var(--border-slate); border-radius:var(--radius-md); padding:20px; margin-bottom:20px; text-align:center;">
+        <i data-lucide="calculator" style="width:48px; height:48px; color:var(--accent-cyan); margin-bottom:10px;"></i>
+        <h3 style="margin:0 0 10px 0; font-size:16px; font-weight:800; color:var(--text-primary);">Generate ${unbilledIds.length} Drafts</h3>
+        <p style="font-size:12px; color:var(--text-secondary); line-height:1.5;">This will instantly convert all Open Drafts into Finalized Pending Invoices.<br><br>The system will automatically pull the customer's Jar/Bottle rates from their <strong>previous month's bill</strong>. If they are new, it defaults to ₹40/₹20.</p>
+        <p style="font-size:11px; color:var(--accent-amber); margin-top:15px; font-weight:bold;"><i data-lucide="alert-triangle" style="width:12px; height:12px;"></i> PDF generation and automatic WhatsApp Blasting must still be done on the Desktop App.</p>
+      </div>
+      <button class="btn btn-primary" onclick="executeMobileBulkBilling()" style="width:100%; margin-bottom:10px; background:linear-gradient(135deg, #3b82f6, #8b5cf6); border:none;"><i data-lucide="check-circle"></i> Generate Bills Now</button>
+      <button class="btn btn-outline" onclick="App.closeModal()" style="width:100%;">Cancel</button>
+    `);
   }
 };

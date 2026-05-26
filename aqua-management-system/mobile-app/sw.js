@@ -1,4 +1,4 @@
-const CACHE_NAME = 'aqua-v24';
+const CACHE_NAME = 'aqua-v25';
 const ASSETS = [
   './',
   './index.html',
@@ -8,7 +8,7 @@ const ASSETS = [
   './js/dashboard.js?v=24',
   './js/deliveries.js?v=24',
   './js/customers.js?v=24',
-  './js/bills.js?v=24',
+  './js/bills.js?v=25',
   './js/reports.js?v=24',
   './js/vendor/lucide.min.js',
   './js/vendor/supabase.min.js',
