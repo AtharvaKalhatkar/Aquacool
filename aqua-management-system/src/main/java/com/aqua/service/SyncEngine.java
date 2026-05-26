@@ -139,8 +139,7 @@ public class SyncEngine {
             else if (table.equals("bills")) {
                 int id = extractInt(clean, "\"id\":");
                 if (id <= 0) continue;
-                String q = "INSERT INTO bills (id, customer_id, bill_month, bill_year, total_jars, total_bottles, jar_rate, bottle_rate, jar_amount, bottle_amount, grand_total, status, sync_status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'SYNCED') " +
-                           "ON CONFLICT(id) DO UPDATE SET customer_id=excluded.customer_id, bill_month=excluded.bill_month, bill_year=excluded.bill_year, total_jars=excluded.total_jars, total_bottles=excluded.total_bottles, jar_rate=excluded.jar_rate, bottle_rate=excluded.bottle_rate, jar_amount=excluded.jar_amount, bottle_amount=excluded.bottle_amount, grand_total=excluded.grand_total, status=excluded.status, sync_status='SYNCED'";
+                String q = "INSERT OR REPLACE INTO bills (id, customer_id, bill_month, bill_year, total_jars, total_bottles, jar_rate, bottle_rate, jar_amount, bottle_amount, grand_total, status, sync_status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'SYNCED')";
                 try (PreparedStatement ps = db.prepareStatement(q)) {
                     ps.setInt(1, id);
                     ps.setInt(2, extractInt(clean, "\"customer_id\":"));

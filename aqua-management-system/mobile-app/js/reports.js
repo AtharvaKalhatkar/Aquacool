@@ -40,31 +40,43 @@ const Reports = {
       } else {
         content.innerHTML = '<div class="spinner"></div>';
       }
-      // 1. Fetch all deliveries AND bills for this month simultaneously!
+      // 1. Fetch all deliveries (with pagination to bypass 1000 limit) AND bills for this month
       const start = `${y}-${String(m).padStart(2,'0')}-01`;
       const nextM = m === 12 ? 1 : m + 1;
       const nextY = m === 12 ? y + 1 : y;
       const end = `${nextY}-${String(nextM).padStart(2,'0')}-01`;
 
-      const [delRes, billRes] = await Promise.all([
-        supabase
+      let allDeliveries = [];
+      let fetchMore = true;
+      let fromIdx = 0;
+      const step = 1000;
+      
+      while(fetchMore) {
+         const { data, error } = await supabase
           .from('deliveries')
           .select('*, customers(name, route)')
           .gte('delivery_date', start)
           .lt('delivery_date', end)
-          .order('delivery_date', { ascending: true }),
-        
-        supabase
+          .order('delivery_date', { ascending: true })
+          .range(fromIdx, fromIdx + step - 1);
+          
+         if (error) throw error;
+         if (data && data.length > 0) {
+            allDeliveries = allDeliveries.concat(data);
+            fromIdx += step;
+         }
+         if (!data || data.length < step) fetchMore = false;
+      }
+
+      const { data: bills, error: billError } = await supabase
           .from('bills')
           .select('customer_id, grand_total')
           .eq('bill_month', m)
-          .eq('bill_year', y)
-      ]);
+          .eq('bill_year', y);
 
-      const dels = delRes.data || [];
-      const bills = billRes.data || [];
+      if (billError) throw billError;
 
-      if (delRes.error) throw delRes.error;
+      const dels = allDeliveries;
       
       // Construct Bill Map: customerId -> moneyAmount
       const billMap = {};
@@ -295,6 +307,7 @@ const Reports = {
 
     } catch (e) {
       console.error(e);
+      alert("Matrix Sync Error: " + e.message);
       if (!hydrated) {
         content.innerHTML = `<div class="empty-state"><i data-lucide="alert-octagon" class="empty-icon-vector"></i><div class="empty-text">Aggregation failure: ${e.message}</div></div>`;
         App.refreshIcons();

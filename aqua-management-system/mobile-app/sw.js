@@ -1,15 +1,15 @@
-const CACHE_NAME = 'aqua-v21';
+const CACHE_NAME = 'aqua-v24';
 const ASSETS = [
   './',
   './index.html',
   './css/style.css',
-  './js/app.js',
-  './js/supabase-config.js',
-  './js/dashboard.js',
-  './js/deliveries.js',
-  './js/customers.js',
-  './js/bills.js',
-  './js/reports.js',
+  './js/app.js?v=24',
+  './js/supabase-config.js?v=24',
+  './js/dashboard.js?v=24',
+  './js/deliveries.js?v=24',
+  './js/customers.js?v=24',
+  './js/bills.js?v=24',
+  './js/reports.js?v=24',
   './js/vendor/lucide.min.js',
   './js/vendor/supabase.min.js',
   './icons/logo.png',
