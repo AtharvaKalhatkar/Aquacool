@@ -432,11 +432,11 @@ const Bills = {
         
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; padding:10px 14px; background:rgba(255,255,255,0.03); border:1px solid var(--border-slate); border-radius:var(--radius-sm);">
            <span style="font-size:13px; font-weight:700; display:inline-flex; align-items:center; gap:6px;"><i data-lucide="droplets" style="width:14px; height:14px; color:var(--accent-cyan);"></i> Jars: <strong>${jars}</strong></span>
-           <input type="number" id="tempJarRate" placeholder="Rate" oninput="calcTempBill()" style="width:80px; background:transparent; border:1px solid var(--border-slate-bright); color:white; border-radius:8px; padding:6px 10px; text-align:right; font-family:inherit; font-weight:700;">
+           <input type="number" id="tempJarRate" placeholder="Rate" oninput="calcTempBill()" style="width:80px; background:transparent; border:1px solid var(--border-slate-bright); color:var(--text-primary); border-radius:8px; padding:6px 10px; text-align:right; font-family:inherit; font-weight:700;">
         </div>
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; padding:10px 14px; background:rgba(255,255,255,0.03); border:1px solid var(--border-slate); border-radius:var(--radius-sm);">
            <span style="font-size:13px; font-weight:700; display:inline-flex; align-items:center; gap:6px;"><i data-lucide="glass-water" style="width:14px; height:14px; color:var(--accent-violet);"></i> Bottles: <strong>${bottles}</strong></span>
-           <input type="number" id="tempBotRate" placeholder="Rate" oninput="calcTempBill()" style="width:80px; background:transparent; border:1px solid var(--border-slate-bright); color:white; border-radius:8px; padding:6px 10px; text-align:right; font-family:inherit; font-weight:700;">
+           <input type="number" id="tempBotRate" placeholder="Rate" oninput="calcTempBill()" style="width:80px; background:transparent; border:1px solid var(--border-slate-bright); color:var(--text-primary); border-radius:8px; padding:6px 10px; text-align:right; font-family:inherit; font-weight:700;">
         </div>
 
         <div style="border-top:1px solid var(--border-slate); padding-top:14px; display:flex; justify-content:space-between; align-items:center;">

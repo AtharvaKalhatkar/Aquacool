@@ -55,6 +55,7 @@ public class BillView extends VBox {
 
     private TableView<Bill> billTable;
     private Label totalIncomeLabel;
+    private CheckBox pendingOnlyCheck;
 
     public BillView() {
         setPadding(new Insets(30));
@@ -114,6 +115,10 @@ public class BillView extends VBox {
         loadBtn.getStyleClass().add("btn-secondary");
         loadBtn.setOnAction(e -> loadBills());
 
+        pendingOnlyCheck = new CheckBox("Pending Only");
+        pendingOnlyCheck.setStyle("-fx-text-fill: #d35400; -fx-font-weight: bold; -fx-font-size: 13px; -fx-padding: 0 10 0 0;");
+        pendingOnlyCheck.setOnAction(e -> loadBills());
+
         row.getChildren().addAll(
                 new Label("Month:") {
                     {
@@ -130,7 +135,7 @@ public class BillView extends VBox {
                         getStyleClass().add("form-label");
                     }
                 }, routeCombo,
-                spacer, bulkBtn, loadBtn);
+                spacer, pendingOnlyCheck, bulkBtn, loadBtn);
         getChildren().add(row);
     }
 
@@ -455,11 +460,6 @@ public class BillView extends VBox {
         exportPdfBtn.getStyleClass().add("btn-secondary");
         exportPdfBtn.setOnAction(e -> exportPDF());
 
-        Button emailBtn = new Button("📧  Email Bill");
-        emailBtn.getStyleClass().add("btn-secondary");
-        emailBtn.setStyle("-fx-border-color: #0069b4; -fx-text-fill: #0069b4; -fx-font-weight: bold;");
-        emailBtn.setOnAction(e -> emailBill());
-
         Button waBtn = new Button("💬 WhatsApp");
         waBtn.getStyleClass().add("btn-secondary");
         waBtn.setStyle("-fx-border-color: #25D366; -fx-text-fill: #25D366; -fx-font-weight: bold;");
@@ -473,12 +473,7 @@ public class BillView extends VBox {
         clearBtn.getStyleClass().add("btn-secondary");
         clearBtn.setOnAction(e -> clearForm());
 
-        Button emailConfigBtn = new Button("⚙️");
-        emailConfigBtn.getStyleClass().add("btn-secondary");
-        emailConfigBtn.setTooltip(new Tooltip("Configure Email Settings"));
-        emailConfigBtn.setOnAction(e -> showEmailConfigDialog());
-
-        btnRow.getChildren().addAll(saveBillBtn, exportPdfBtn, emailBtn, waBtn, printBtn, clearBtn, emailConfigBtn);
+        btnRow.getChildren().addAll(saveBillBtn, exportPdfBtn, waBtn, printBtn, clearBtn);
 
         formBox.getChildren().addAll(formTitle, searchBox, cardsRow, btnRow);
         formBox.setOnKeyPressed(e -> {
@@ -502,8 +497,8 @@ public class BillView extends VBox {
         billTable.getStyleClass().add("data-table");
         billTable.setPlaceholder(new Label("No bills yet. Select a customer and enter rates above."));
         
-        // Proportional column layout eliminates horizontal scrolls
-        billTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        // Unconstrained policy allows horizontal scrolling if the screen is too small, preventing cut-offs!
+        billTable.setColumnResizePolicy(TableView.UNCONSTRAINED_RESIZE_POLICY);
 
         // Force table height to scale dynamically to fit all rows without inner vertical scrolling
         billTable.setFixedCellSize(45);
@@ -568,10 +563,15 @@ public class BillView extends VBox {
                 if (empty || item == null) {
                     setText(null);
                     setStyle("");
+                    setOnMouseClicked(null);
                 } else {
                     setText(item);
-                    setStyle("PAID".equals(item) ? "-fx-text-fill:#27ae60;-fx-font-weight:bold;"
-                            : "-fx-text-fill:#e67e22;-fx-font-weight:bold;");
+                    setStyle("PAID".equals(item) ? "-fx-text-fill:#27ae60;-fx-font-weight:bold;-fx-cursor:hand;-fx-underline:true;"
+                            : "-fx-text-fill:#e67e22;-fx-font-weight:bold;-fx-cursor:hand;-fx-underline:true;");
+                    setOnMouseClicked(e -> {
+                        Bill b = getTableView().getItems().get(getIndex());
+                        togglePaid(b);
+                    });
                 }
             }
         });
@@ -580,31 +580,20 @@ public class BillView extends VBox {
         actCol.setPrefWidth(230);
         actCol.setMinWidth(220);
         actCol.setCellFactory(col -> new TableCell<>() {
-            private final Button pdfBtn = new Button("📄");
-            private final Button emailActBtn = new Button("📧");
-            private final Button waActBtn = new Button("💬");
-            private final Button paidBtn = new Button("✅");
-            private final HBox box = new HBox(6, pdfBtn, emailActBtn, waActBtn, paidBtn);
+            private final Button pdfBtn = new Button("PDF");
+            private final Button waActBtn = new Button("WhatsApp");
+            private final HBox box = new HBox(6, pdfBtn, waActBtn);
             {
                 pdfBtn.getStyleClass().add("btn-small-edit");
-                pdfBtn.setMinWidth(36); pdfBtn.setPrefWidth(36);
-                
-                emailActBtn.getStyleClass().add("btn-small-edit");
-                emailActBtn.setMinWidth(36); emailActBtn.setPrefWidth(36);
-                emailActBtn.setStyle("-fx-background-color: #e3f2fd; -fx-text-fill: #0069b4;");
+                pdfBtn.setMinWidth(50);
                 
                 waActBtn.getStyleClass().add("btn-small-edit");
-                waActBtn.setMinWidth(36); waActBtn.setPrefWidth(36);
-                waActBtn.setStyle("-fx-background-color: #e8f5e9; -fx-text-fill: #25D366;");
-                
-                paidBtn.getStyleClass().add("btn-small-edit");
-                paidBtn.setMinWidth(92); paidBtn.setPrefWidth(92);
+                waActBtn.setMinWidth(80);
+                waActBtn.setStyle("-fx-background-color: #e8f5e9; -fx-text-fill: #25D366; -fx-font-weight: bold;");
                 
                 box.setAlignment(Pos.CENTER);
                 pdfBtn.setOnAction(e -> exportBillPDF(getTableView().getItems().get(getIndex())));
-                emailActBtn.setOnAction(e -> emailBillFromTable(getTableView().getItems().get(getIndex())));
                 waActBtn.setOnAction(e -> sendWhatsAppFromTable(getTableView().getItems().get(getIndex())));
-                paidBtn.setOnAction(e -> togglePaid(getTableView().getItems().get(getIndex())));
             }
 
             @Override
@@ -613,8 +602,6 @@ public class BillView extends VBox {
                 if (empty)
                     setGraphic(null);
                 else {
-                    Bill b = getTableView().getItems().get(getIndex());
-                    paidBtn.setText("PAID".equals(b.getStatus()) ? "↩️ Unpaid" : "✅ Paid");
                     setGraphic(box);
                 }
             }
@@ -1238,28 +1225,19 @@ public class BillView extends VBox {
         
         scroll.setContent(grid);
         
-        CheckBox emailCheck = new CheckBox("Send Emails automatically (if address available)");
-        emailCheck.setSelected(true);
-        emailCheck.setPadding(new Insets(0, 0, 0, 15));
-        
-        mainBox.getChildren().addAll(new Label("  Input rates and press Enter to jump to next:"), scroll, emailCheck);
+        mainBox.getChildren().addAll(new Label("  Input rates and press Enter to jump to next:"), scroll);
         dialog.getDialogPane().setContent(mainBox);
         dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
         
         dialog.showAndWait().ifPresent(response -> {
             if (response == ButtonType.OK) {
-                boolean sendEmails = emailCheck.isSelected();
-                if (sendEmails && !emailService.isConfigured()) {
-                    AlertUtil.showWarning("Configuration", "Email not configured. Generating bills only.");
-                }
-                
                 Alert progress = new Alert(Alert.AlertType.INFORMATION);
                 progress.setTitle("Bulk Processing");
                 progress.setHeaderText("Processing " + pendingCustomers.size() + " bills...");
                 progress.show();
                 
                 new Thread(() -> {
-                    int count = 0, emailCount = 0;
+                    int count = 0;
                     for (Customer c : pendingCustomers) {
                         try {
                             TextField[] fields = rateFieldsMap.get(c);
@@ -1269,31 +1247,24 @@ public class BillView extends VBox {
                             Bill bill = billService.generateBill(c, m, y, jr, br);
                             if (bill != null) {
                                 count++;
-                                if (sendEmails && c.getEmail() != null && !c.getEmail().isEmpty()) {
-                                    try {
-                                        String dir = System.getProperty("user.home") + File.separator + ".aqua_management" 
-                                                   + File.separator + "temp_bills" + File.separator + y + File.separator + Month.of(m).getDisplayName(TextStyle.FULL, Locale.ENGLISH);
-                                        new File(dir).mkdirs();
-                                        String pdfPath = dir + File.separator + "Bill_" + c.getName().replaceAll("\\s+", "_") + "_" + m + "_" + y + ".pdf";
-                                        PDFGenerator.generateInvoice(bill, pdfPath, billService.getDateRange(c.getId(), m, y));
-                                        
-                                        String monthName = Month.of(m).getDisplayName(TextStyle.FULL, Locale.ENGLISH);
-                                        String subject = "Water Bill - " + monthName + " " + y;
-                                        String body = "Dear " + c.getName() + ", your bill for " + monthName + " is ready. Total: ₹" + bill.getGrandTotal();
-                                        emailService.sendEmail(c.getEmail(), subject, body, new File(pdfPath));
-                                        emailCount++;
-                                    } catch (Exception ex) { ex.printStackTrace(); }
-                                }
+                                
+                                // Generate PDF Invoice right away
+                                try {
+                                    String dir = System.getProperty("user.home") + File.separator + "Documents" + File.separator + "AquaBills" 
+                                               + File.separator + y + File.separator + Month.of(m).getDisplayName(TextStyle.FULL, Locale.ENGLISH);
+                                    new File(dir).mkdirs();
+                                    String pdfPath = dir + File.separator + c.getName().replaceAll("[^a-zA-Z0-9]", "_") + "_01_to_30_" + Month.of(m).getDisplayName(TextStyle.FULL, Locale.ENGLISH) + "_" + y + ".pdf";
+                                    PDFGenerator.generateInvoice(bill, pdfPath, billService.getDateRange(c.getId(), m, y));
+                                } catch (Exception ex) { ex.printStackTrace(); }
                             }
                         } catch (Exception ex) { ex.printStackTrace(); }
                     }
                     
                     final int totalG = count;
-                    final int totalE = emailCount;
                     javafx.application.Platform.runLater(() -> {
                         progress.close();
                         loadBills();
-                        AlertUtil.showSuccess("🚀 Fast Billing Complete!\n✅ Generated " + totalG + " bills.\n📧 Sent " + totalE + " emails.");
+                        AlertUtil.showSuccess("🚀 Fast Billing Complete!\n✅ Generated " + totalG + " bills & PDFs.");
                     });
                 }).start();
             }
@@ -1303,6 +1274,11 @@ public class BillView extends VBox {
     private void loadBills() {
         int m = getMonth(), y = getYear();
         List<Bill> bills = billService.getBillsByMonth(m, y);
+        
+        if (pendingOnlyCheck != null && pendingOnlyCheck.isSelected()) {
+            bills = bills.stream().filter(b -> "PENDING".equals(b.getStatus())).toList();
+        }
+        
         billTable.setItems(FXCollections.observableArrayList(bills));
         billTable.refresh();
         double total = bills.stream().mapToDouble(Bill::getGrandTotal).sum();
@@ -1311,5 +1287,102 @@ public class BillView extends VBox {
 
     public void refreshData() {
         loadBills();
+    }
+
+    private void bulkWhatsAppBlast() {
+        int m = getMonth(), y = getYear();
+        List<Bill> bills = billService.getBillsByMonth(m, y);
+        List<Bill> pending = bills.stream().filter(b -> "PENDING".equals(b.getStatus())).toList();
+
+        if (pending.isEmpty()) {
+            AlertUtil.showInfo("WhatsApp Blast", "No pending bills found for this month!");
+            return;
+        }
+
+        Alert progress = new Alert(Alert.AlertType.INFORMATION);
+        progress.setTitle("Auto WhatsApp Blast");
+        progress.setHeaderText("Sending " + pending.size() + " WhatsApp Messages...");
+        progress.setContentText("PLEASE DO NOT TOUCH YOUR MOUSE OR KEYBOARD!");
+        progress.show();
+
+        new Thread(() -> {
+            try {
+                java.awt.Robot robot = new java.awt.Robot();
+                int count = 0;
+                
+                String upiId = emailService.getUpiId();
+                if (upiId == null || upiId.isEmpty()) {
+                    upiId = "kalhatkaratharva01@okhdfcbank";
+                }
+                String senderName = emailService.getSenderName() != null ? emailService.getSenderName() : "Bhairavnath Cool Aqua";
+
+                for (Bill bill : pending) {
+                    Customer cust = customerService.getCustomerById(bill.getCustomerId());
+                    String mobile = (cust != null && cust.getMobile() != null) ? cust.getMobile().replaceAll("[^0-9]", "") : "";
+                    
+                    if (mobile.length() >= 10) {
+                        if (mobile.length() == 10) mobile = "91" + mobile;
+                        
+                        String upiUri = String.format("upi://pay?pa=%s&pn=%s&am=%.0f&cu=INR",
+                            upiId.replace(" ", ""), senderName.replace(" ", "%20"), bill.getGrandTotal());
+
+                        String message = String.format("Dear %s,\n\nYour water bill for %s %d is ready.\n*Total Amount: Rs. %.0f*\n\nClick below to pay instantly via GPay/PhonePe/Paytm:\n%s\n\nThank you!\n- Bhairavnath Cool Aqua",
+                            bill.getCustomerName(), bill.getMonthName(), bill.getBillYear(), bill.getGrandTotal(), upiUri);
+
+                        // Locate PDF
+                        String docsFolder = System.getProperty("user.home") + File.separator + "Documents" + File.separator + "AquaBills" + File.separator + bill.getBillYear() + File.separator + bill.getMonthName();
+                        String safeName = bill.getCustomerName().replaceAll("[^a-zA-Z0-9]", "_");
+                        File dir = new File(docsFolder);
+                        File pdfFile = null;
+                        
+                        if (dir.exists()) {
+                            File[] files = dir.listFiles((d, name) -> name.startsWith(safeName + "_") && name.endsWith(".pdf"));
+                            if (files != null && files.length > 0) {
+                                pdfFile = files[0];
+                            }
+                        }
+
+                        // Open WhatsApp Desktop App natively
+                        String waLink = "whatsapp://send?phone=" + mobile + "&text=" + java.net.URLEncoder.encode(message, "UTF-8").replace("+", "%20");
+                        Runtime.getRuntime().exec("cmd /c start \"\" \"" + waLink + "\"");
+                        
+                        Thread.sleep(6000); // Wait 6s for WhatsApp to load
+                        
+                        if (pdfFile != null) {
+                            // Copy PDF to clipboard using PowerShell
+                            Runtime.getRuntime().exec(new String[]{"powershell.exe", "-command", "Set-Clipboard -Path '" + pdfFile.getAbsolutePath() + "'"});
+                            Thread.sleep(1500); // Wait for clipboard
+                            
+                            // Press Ctrl+V
+                            robot.keyPress(java.awt.event.KeyEvent.VK_CONTROL);
+                            robot.keyPress(java.awt.event.KeyEvent.VK_V);
+                            robot.keyRelease(java.awt.event.KeyEvent.VK_V);
+                            robot.keyRelease(java.awt.event.KeyEvent.VK_CONTROL);
+                            
+                            Thread.sleep(2500); // Wait for PDF preview to load in WhatsApp
+                        }
+
+                        // Press Enter to send!
+                        robot.keyPress(java.awt.event.KeyEvent.VK_ENTER);
+                        robot.keyRelease(java.awt.event.KeyEvent.VK_ENTER);
+                        
+                        count++;
+                        Thread.sleep(3000); // Pause before next customer
+                    }
+                }
+                
+                final int totalSent = count;
+                javafx.application.Platform.runLater(() -> {
+                    progress.close();
+                    AlertUtil.showSuccess("🎉 WhatsApp Blast Complete!\nSent " + totalSent + " messages.");
+                });
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                javafx.application.Platform.runLater(() -> {
+                    progress.close();
+                    AlertUtil.showError("Blast Error", "Error: " + ex.getMessage());
+                });
+            }
+        }).start();
     }
 }

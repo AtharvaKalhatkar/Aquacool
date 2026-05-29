@@ -32,6 +32,7 @@ public class App extends Application {
     private DeliveryView deliveryView;
     private BillView billView;
     private ReportsView reportsView;
+    private BlastView blastView;
     private Button activeButton = null;
     private Button[] navButtons;
     private Label statusLabel;
@@ -85,6 +86,7 @@ public class App extends Application {
         deliveryView = new DeliveryView();
         billView = new BillView();
         reportsView = new ReportsView();
+        blastView = new BlastView();
 
         showView(dashboardView);
         updateStatus("📊 Dashboard");
@@ -186,12 +188,13 @@ public class App extends Application {
         VBox navBox = new VBox(6);
         navBox.setPadding(new Insets(20, 15, 10, 15));
 
-        navButtons = new Button[5];
+        navButtons = new Button[6];
         navButtons[0] = navBtn("📊  Dashboard", "Alt+1", () -> { showView(dashboardView); dashboardView.refreshData(); updateStatus("📊 Dashboard"); });
         navButtons[1] = navBtn("🚚  Deliveries", "Alt+2", () -> { showView(deliveryView); deliveryView.refreshData(); updateStatus("🚚 Deliveries"); });
         navButtons[2] = navBtn("📋  Bills", "Alt+3", () -> { showView(billView); billView.refreshData(); updateStatus("📋 Bills"); });
         navButtons[3] = navBtn("👥  Customers", "Alt+4", () -> { showView(customerView); customerView.refreshData(); updateStatus("👥 Customers"); });
         navButtons[4] = navBtn("📈  Reports", "Alt+5", () -> { showView(reportsView); reportsView.refreshData(); updateStatus("📈 Reports"); });
+        navButtons[5] = navBtn("💬  Broadcaster", "Alt+6", () -> { showView(blastView); blastView.refreshData(); updateStatus("💬 Broadcaster"); });
 
         navBox.getChildren().addAll(navButtons);
         setActive(navButtons[0]);
