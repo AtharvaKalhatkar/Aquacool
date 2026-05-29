@@ -153,31 +153,31 @@ const Customers = {
 
   showAddForm() {
     App.showModal(`
-      <div class="modal-title"><i data-lucide="user-plus"></i> Register Client</div>
+      <div class="modal-title"><i data-lucide="user-plus"></i> Add Customer</div>
       <div class="form-group">
-        <label class="form-label">Full Name *</label>
+        <label class="form-label">Name *</label>
         <input class="form-input" type="text" id="custName" placeholder="e.g. John Doe">
       </div>
       <div class="form-group">
-        <label class="form-label">Address / Street</label>
+        <label class="form-label">Address</label>
         <input class="form-input" type="text" id="custAddress" placeholder="Flat, wing, building...">
       </div>
       <div class="form-row">
         <div class="form-group">
-          <label class="form-label">Mobile Phone</label>
+          <label class="form-label">Mobile</label>
           <input class="form-input" type="tel" id="custMobile" placeholder="10 digit mobile" inputmode="tel">
         </div>
         <div class="form-group">
-          <label class="form-label">Route Sector</label>
+          <label class="form-label">Route</label>
           <input class="form-input" type="text" id="custRoute" placeholder="Sector name">
         </div>
       </div>
       <div class="form-group">
-        <label class="form-label">Email Address</label>
+        <label class="form-label">Email</label>
         <input class="form-input" type="email" id="custEmail" placeholder="Optional email">
       </div>
       <button class="btn btn-primary" onclick="Customers.save()">
-        <i data-lucide="check-circle"></i> Create Client Profile
+        <i data-lucide="check-circle"></i> Save Customer
       </button>
       <button class="btn btn-outline mt-8" onclick="App.closeModal()">Cancel</button>
     `);
@@ -187,7 +187,7 @@ const Customers = {
     const c = this.allCustomers.find(x => x.id === id);
     if (!c) return;
     App.showModal(`
-      <div class="modal-title"><i data-lucide="edit-3"></i> Edit Profile</div>
+      <div class="modal-title"><i data-lucide="edit-3"></i> Edit Customer</div>
       <input type="hidden" id="custEditId" value="${c.id}">
       <div class="form-group">
         <label class="form-label">Name *</label>
@@ -211,7 +211,7 @@ const Customers = {
         <label class="form-label">Email</label>
         <input class="form-input" type="email" id="custEmail" value="${c.email||''}">
       </div>
-      <button class="btn btn-primary" onclick="Customers.update()"><i data-lucide="save"></i> Save Changes</button>
+      <button class="btn btn-primary" onclick="Customers.update()"><i data-lucide="save"></i> Save Customer</button>
       <button class="btn btn-outline mt-8" onclick="App.closeModal()">Cancel</button>
     `);
   },

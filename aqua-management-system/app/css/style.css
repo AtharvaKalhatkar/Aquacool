@@ -764,6 +764,14 @@ body {
   outline: none;
   transition: all 0.25s;
 }
+.form-input::placeholder {
+  color: var(--text-muted) !important;
+  opacity: 0.45 !important;
+}
+html.light-mode .form-input::placeholder {
+  color: #94a3b8 !important;
+  opacity: 0.55 !important;
+}
 .form-input:focus {
   border-color: var(--accent-cyan);
   background: var(--bg-slate-hover);

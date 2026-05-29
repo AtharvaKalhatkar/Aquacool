@@ -140,10 +140,10 @@ const Deliveries = {
     App.showModal(`
       <div class="modal-title"><i data-lucide="truck"></i> Record Delivery</div>
       <div class="form-group" style="position:relative">
-        <label class="form-label">Find Customer Profile</label>
+        <label class="form-label">Find Customer</label>
         <div class="search-bar-pro" style="margin-bottom:0;">
           <i data-lucide="search" class="search-icon-vector" style="color:var(--accent-cyan)"></i>
-          <input type="text" class="form-input" id="custSearchInput" placeholder="Type to search name or route..." autocomplete="off" 
+          <input type="text" class="form-input" id="custSearchInput" placeholder="Search name..." autocomplete="off" 
             onfocus="Deliveries.filterCusts(this.value)" 
             oninput="Deliveries.filterCusts(this.value)"
             style="padding-left:44px;">
@@ -152,21 +152,21 @@ const Deliveries = {
         <div id="custSuggestions" class="suggestions-list"></div>
       </div>
       <div class="form-group">
-        <label class="form-label">Date of Drop-off</label>
+        <label class="form-label">Date</label>
         <input class="form-input" type="date" id="addDelDate" value="${App.todayStr()}">
       </div>
       <div class="form-row">
         <div class="form-group">
-          <label class="form-label">Jars Dispatched</label>
+          <label class="form-label">Jars</label>
           <input class="form-input" type="number" id="addDelJars" value="1" min="0" inputmode="numeric">
         </div>
         <div class="form-group">
-          <label class="form-label">Bottles Dispatched</label>
+          <label class="form-label">Bottles</label>
           <input class="form-input" type="number" id="addDelBottles" value="0" min="0" inputmode="numeric">
         </div>
       </div>
       <button class="btn btn-primary" onclick="Deliveries.save()">
-        <i data-lucide="check-circle"></i> Save Delivery Log Entry
+        <i data-lucide="check-circle"></i> Save Delivery
       </button>
       <button class="btn btn-outline mt-8" onclick="App.closeModal()">Cancel</button>
     `);

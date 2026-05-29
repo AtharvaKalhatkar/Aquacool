@@ -1,13 +1,13 @@
-const CACHE_NAME = 'aqua-v28';
+const CACHE_NAME = 'aqua-v29';
 const ASSETS = [
   './',
   './index.html',
-  './css/style.css?v=26',
+  './css/style.css?v=29',
   './js/app.js?v=28',
   './js/supabase-config.js?v=26',
   './js/dashboard.js?v=26',
-  './js/deliveries.js?v=26',
-  './js/customers.js?v=26',
+  './js/deliveries.js?v=29',
+  './js/customers.js?v=29',
   './js/bills.js?v=26',
   './js/reports.js?v=26',
   './js/vendor/lucide.min.js',
