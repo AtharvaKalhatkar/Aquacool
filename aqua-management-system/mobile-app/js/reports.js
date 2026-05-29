@@ -166,7 +166,8 @@ const Reports = {
           .sticky-col {
             position: sticky;
             left: 0;
-            background: #0a0b0d !important;
+            background: var(--bg-sticky-col, #0a0b0d) !important;
+            color: var(--text-primary) !important;
             z-index: 10;
             text-align: left !important;
             min-width: 120px;
@@ -187,7 +188,7 @@ const Reports = {
              font-weight: 800;
           }
           .row-accent:nth-child(even) td { background-color: rgba(255,255,255,0.01); }
-          .row-accent:nth-child(even) .sticky-col { background: #0e1014 !important; }
+          .row-accent:nth-child(even) .sticky-col { background: var(--bg-sticky-col-alt, #0e1014) !important; }
         </style>
 
         <div class="flex-between mb-8" style="font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:0.05em; color:var(--text-muted)">

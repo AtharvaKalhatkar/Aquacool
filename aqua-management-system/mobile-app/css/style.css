@@ -7,6 +7,9 @@
   --border-slate: rgba(255, 255, 255, 0.05);
   --border-slate-bright: rgba(255, 255, 255, 0.09);
   
+  --bg-sticky-col: #0a0b0d;
+  --bg-sticky-col-alt: #0e1014;
+  
   --text-primary: #f9fafb;
   --text-secondary: #9ca3af;
   --text-muted: #6b7280;
@@ -33,6 +36,9 @@ html.light-mode {
   --bg-slate-hover: #f1f5f9;
   --border-slate: rgba(0, 0, 0, 0.07);
   --border-slate-bright: rgba(0, 0, 0, 0.13);
+  
+  --bg-sticky-col: #ffffff;
+  --bg-sticky-col-alt: #f8fafc;
   
   --text-primary: #0f172a;
   --text-secondary: #475569;
