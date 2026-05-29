@@ -4,11 +4,17 @@ const OWNER_PIN = '1234';
 const App = {
   currentPage: 'Dashboard',
 
-  navigate(page) {
+  navigate(page, pushHistory = true) {
     // Check Owner Security Privilege for the entire consolidated Vault
     if (page === 'Vault' && sessionStorage.getItem('owner_authed') !== 'true') {
       this.promptOwnerPin(page);
       return;
+    }
+
+    if (pushHistory) {
+      try {
+        history.pushState({ page }, '', '');
+      } catch (e) {}
     }
 
     // Transition Page Display
@@ -226,6 +232,9 @@ document.getElementById('modal').addEventListener('click', function(e) {
 // Global Boot Engine
 document.addEventListener('DOMContentLoaded', async () => {
   App.initTheme();
+  try {
+    history.replaceState({ page: 'Dashboard' }, '', '');
+  } catch (e) {}
   const options = { weekday:'long', day:'numeric', month:'long', year:'numeric', timeZone: 'Asia/Kolkata' };
   const dateEl = document.getElementById('dashDate');
   if (dateEl) {
@@ -234,6 +243,15 @@ document.addEventListener('DOMContentLoaded', async () => {
   const ok = await checkConnection();
   document.getElementById('syncStatus').textContent = ok ? 'Connected' : 'Checking Key...';
   Dashboard.load();
+});
+
+// Handle Back/Forward Navigation Native Gestures
+window.addEventListener('popstate', (event) => {
+  if (event.state && event.state.page) {
+    App.navigate(event.state.page, false);
+  } else {
+    App.navigate('Dashboard', false);
+  }
 });
 
 // Global Suggestion auto-collapser
