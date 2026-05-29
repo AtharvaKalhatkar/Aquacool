@@ -42,7 +42,15 @@ public class PDFGenerator {
 
         // ── FONTS (Times Roman for professional look) ──
         Font brandFont   = new Font(Font.FontFamily.TIMES_ROMAN, 26, Font.BOLD, BLACK);
-        Font religiousF  = new Font(Font.FontFamily.TIMES_ROMAN, 9, Font.ITALIC, MID_GRAY);
+        String relText = "॥ श्री भैरवनाथ प्रसन्न ॥";
+        Font religiousF;
+        try {
+            com.itextpdf.text.pdf.BaseFont devBF = com.itextpdf.text.pdf.BaseFont.createFont("C:\\Windows\\Fonts\\mangal.ttf", com.itextpdf.text.pdf.BaseFont.IDENTITY_H, com.itextpdf.text.pdf.BaseFont.EMBEDDED);
+            religiousF = new Font(devBF, 9, Font.NORMAL, MID_GRAY);
+        } catch (Exception e) {
+            religiousF = new Font(Font.FontFamily.TIMES_ROMAN, 9, Font.ITALIC, MID_GRAY);
+            relText = "|| Shri Bhairavnath Prasanna ||";
+        }
         Font addressF    = new Font(Font.FontFamily.TIMES_ROMAN, 9, Font.NORMAL, DARK_GRAY);
         Font phoneF      = new Font(Font.FontFamily.TIMES_ROMAN, 10, Font.BOLD, BLACK);
         Font invTagF     = new Font(Font.FontFamily.TIMES_ROMAN, 18, Font.BOLD, BLACK);
@@ -66,7 +74,7 @@ public class PDFGenerator {
         //  HEADER: Religious text + Business Name + Address + Phone
         // ════════════════════════════════════════════════════════════════
 
-        Paragraph rel = new Paragraph("|| Shri Bhairavnath Prasanna ||", religiousF);
+        Paragraph rel = new Paragraph(relText, religiousF);
         rel.setAlignment(Element.ALIGN_CENTER);
         rel.setSpacingAfter(1);
         doc.add(rel);
