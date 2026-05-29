@@ -33,7 +33,8 @@ const translations = {
     sales: 'Monthly Business Sales',
     bulkBillingBtn: 'Auto Bulk Billing (Calculations)',
     invoices: 'Invoices',
-    reports: 'Report Grid'
+    reports: 'Report Grid',
+    openPdf: 'Open Invoice PDF'
   },
   mr: {
     home: 'मुख्य पान',
@@ -67,7 +68,8 @@ const translations = {
     sales: 'मासिक व्यवसाय विक्री',
     bulkBillingBtn: 'ऑटो बिल गणना (एकत्रित)',
     invoices: 'बिले / पावत्या',
-    reports: 'अहवाल तक्ता'
+    reports: 'अहवाल तक्ता',
+    openPdf: 'इन्वॉइस PDF उघडा'
   }
 };
 
