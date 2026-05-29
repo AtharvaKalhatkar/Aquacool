@@ -344,7 +344,8 @@ const Bills = {
           </style>
         </head>
         <body onload="setTimeout(()=> { window.print(); window.close(); }, 500);">
-          <div class="rel">|| Shri Bhairavnath Prasanna ||</div>
+          <div class="rel" style="font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800; font-style: normal; font-size: 13px; margin-bottom: 8px;">॥ श्री भैरवनाथ प्रसन्न ॥</div>
+          <div style="text-align: center; margin-bottom: 6px;"><img src="https://atharvakalhatkar.github.io/Aqua-/mobile-app/icons/logo.png" style="width: 50px; height: 50px; border-radius: 50%;"></div>
           <div class="brand">BHAIRAVNATH COOL AQUA</div>
           <div class="addr">Bathe Wasti, Talawade, Tal. Haveli, Dist. Pune - 411 062</div>
           <div class="phone">Mob: 7030355656 / 8888355656</div>
@@ -518,7 +519,8 @@ const Bills = {
           .fine-print { text-align: center; margin-top: 25px; border-top: 1px solid #eee; font-size: 9px; }
         </style></head>
         <body onload="setTimeout(()=> { window.print(); window.close(); }, 500);">
-          <div class="rel">|| Shri Bhairavnath Prasanna ||</div>
+          <div class="rel" style="font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800; font-style: normal; font-size: 13px; margin-bottom: 8px;">॥ श्री भैरवनाथ प्रसन्न ॥</div>
+          <div style="text-align: center; margin-bottom: 6px;"><img src="https://atharvakalhatkar.github.io/Aqua-/mobile-app/icons/logo.png" style="width: 50px; height: 50px; border-radius: 50%;"></div>
           <div class="brand">BHAIRAVNATH COOL AQUA</div>
           <div class="addr">Bathe Wasti, Talawade, Tal. Haveli, Dist. Pune</div>
           <div class="phone">Mob: 7030355656 / 8888355656</div>
