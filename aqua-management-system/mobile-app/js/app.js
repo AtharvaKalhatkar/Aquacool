@@ -82,47 +82,53 @@ const App = {
 
   toggleLanguage() {
     this.currentLang = this.currentLang === 'en' ? 'mr' : 'en';
-    localStorage.setItem('lang', this.currentLang);
+    try {
+      localStorage.setItem('lang', this.currentLang);
+    } catch(e) {}
     this.applyLanguage();
     
     // Refresh page state to render dynamic values
-    if (this.currentPage === 'Dashboard') Dashboard.load();
-    else if (this.currentPage === 'Deliveries') Deliveries.load();
-    else if (this.currentPage === 'Customers') Customers.load();
+    if (this.currentPage === 'Dashboard' && typeof Dashboard !== 'undefined' && Dashboard.load) Dashboard.load();
+    else if (this.currentPage === 'Deliveries' && typeof Deliveries !== 'undefined' && Deliveries.load) Deliveries.load();
+    else if (this.currentPage === 'Customers' && typeof Customers !== 'undefined' && Customers.load) Customers.load();
     else if (this.currentPage === 'Vault') {
-      if (document.getElementById('vaultBillsSection').style.display !== 'none') {
+      const vBills = document.getElementById('vaultBillsSection');
+      if (vBills && vBills.style.display !== 'none' && typeof Bills !== 'undefined' && Bills.load) {
         Bills.load();
-      } else {
+      } else if (typeof Reports !== 'undefined' && Reports.load) {
         Reports.load();
       }
     }
   },
 
   applyLanguage() {
+    if (typeof translations === 'undefined' || !this.currentLang || !translations[this.currentLang]) return;
     const isMr = this.currentLang === 'mr';
     const langBtnText = document.getElementById('langText');
     if (langBtnText) langBtnText.textContent = isMr ? 'EN' : 'मराठी';
 
     document.querySelectorAll('[data-t]').forEach(el => {
-      const key = el.getAttribute('data-t');
-      const translation = translations[this.currentLang][key];
-      if (translation) {
-        if (el.tagName === 'INPUT' && el.hasAttribute('placeholder')) {
-          el.setAttribute('placeholder', translation);
-        } else {
-          // Check for sub elements (like icons)
-          const icon = el.querySelector('i[data-lucide], svg');
-          if (icon) {
-            // Re-render keeping icon intact
-            const iconHTML = icon.outerHTML;
-            el.innerHTML = iconHTML + ' ' + translation;
+      try {
+        const key = el.getAttribute('data-t');
+        const translation = translations[this.currentLang][key];
+        if (translation) {
+          if (el.tagName === 'INPUT' && el.hasAttribute('placeholder')) {
+            el.setAttribute('placeholder', translation);
           } else {
-            el.textContent = translation;
+            // Check for sub elements (like icons)
+            const icon = el.querySelector('i[data-lucide], svg');
+            if (icon) {
+              // Re-render keeping icon intact
+              const iconHTML = icon.outerHTML;
+              el.innerHTML = iconHTML + ' ' + translation;
+            } else {
+              el.textContent = translation;
+            }
           }
         }
-      }
+      } catch(e) {}
     });
-    this.refreshIcons();
+    if (this.refreshIcons) this.refreshIcons();
   },
 
   navigate(page, pushHistory = true) {
@@ -352,8 +358,10 @@ document.getElementById('modal').addEventListener('click', function(e) {
 
 // Global Boot Engine
 document.addEventListener('DOMContentLoaded', async () => {
-  App.initTheme();
-  App.applyLanguage();
+  if (typeof App !== 'undefined') {
+    if (App.initTheme) App.initTheme();
+    if (App.applyLanguage) App.applyLanguage();
+  }
   try {
     history.replaceState({ page: 'Dashboard' }, '', '');
   } catch (e) {}
@@ -364,7 +372,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
   const ok = await checkConnection();
   document.getElementById('syncStatus').textContent = ok ? 'Connected' : 'Checking Key...';
-  Dashboard.load();
+  if (typeof Dashboard !== 'undefined' && Dashboard.load) {
+    Dashboard.load();
+  }
 });
 
 // Handle Back/Forward Navigation Native Gestures
