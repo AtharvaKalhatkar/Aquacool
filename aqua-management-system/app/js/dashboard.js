@@ -97,12 +97,12 @@ const Dashboard = {
     let topHtml = '';
     if (isOffline) {
       topHtml = `<div style="background:rgba(245,158,11,0.08); color:var(--accent-amber); border:1px solid rgba(245,158,11,0.2); border-radius:12px; padding:10px; margin-bottom:16px; font-size:10px; text-align:center; font-weight:800; display:flex; align-items:center; justify-content:center; gap:6px;">
-        <i data-lucide="cloud-off" style="width:12px; height:12px;"></i> LOADED FROM LOCAL VAULT
+        <i data-lucide="cloud-off" style="width:12px; height:12px;"></i> ${App.t('localVaultLoaded')}
       </div>`;
     }
 
     if (!data.todayDels || data.todayDels.length === 0) {
-      todayDiv.innerHTML = topHtml + '<div class="empty-state"><i data-lucide="truck" class="empty-icon-vector"></i><div class="empty-text">No deliveries registered yet today.</div></div>';
+      todayDiv.innerHTML = topHtml + `<div class="empty-state"><i data-lucide="truck" class="empty-icon-vector"></i><div class="empty-text">${App.t('noDeliveries')}</div></div>`;
     } else {
       let html = topHtml;
       data.todayDels.forEach(d => {
@@ -113,10 +113,10 @@ const Dashboard = {
           <div class="list-content">
             <div class="list-name">${name}</div>
             <div class="list-detail">
-              <i data-lucide="droplets" class="icon-xxs"></i> ${d.jar_qty} Jars &nbsp;·&nbsp; <i data-lucide="glass-water" class="icon-xxs"></i> ${d.bottle_qty} Bottles
+              <i data-lucide="droplets" class="icon-xxs"></i> ${d.jar_qty} ${App.t('jars')} &nbsp;·&nbsp; <i data-lucide="glass-water" class="icon-xxs"></i> ${d.bottle_qty} ${App.t('bottles')}
             </div>
           </div>
-          <div class="list-right"><div class="list-value">${d.jar_qty + d.bottle_qty}</div><div class="list-sub">items</div></div>
+          <div class="list-right"><div class="list-value">${d.jar_qty + d.bottle_qty}</div><div class="list-sub">${App.t('items')}</div></div>
         </div>`;
       });
       todayDiv.innerHTML = html;
@@ -125,7 +125,7 @@ const Dashboard = {
     // Render Pending Bills
     const pendDiv = document.getElementById('pendingBillsList');
     if (pending.length === 0) {
-      pendDiv.innerHTML = '<div class="empty-state"><i data-lucide="check-circle-2" class="empty-icon-vector" style="color:var(--accent-emerald)"></i><div class="empty-text">All collections completed!</div></div>';
+      pendDiv.innerHTML = `<div class="empty-state"><i data-lucide="check-circle-2" class="empty-icon-vector" style="color:var(--accent-emerald)"></i><div class="empty-text">${App.t('allCollections')}</div></div>`;
     } else {
       const custMap = {};
       (data.pendingCusts||[]).forEach(c => custMap[c.id] = c.name);

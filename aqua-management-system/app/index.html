@@ -26,7 +26,11 @@
           <div class="header-subtitle" id="syncStatus">Connecting...</div>
         </div>
       </div>
-      <div style="display: flex; gap: 10px;">
+      <div style="display: flex; gap: 8px; align-items: center;">
+        <button class="header-sync" id="btnLang" onclick="App.toggleLanguage()" aria-label="Toggle Language" style="font-size: 11px; font-weight: 800; padding: 0 10px; width: auto; min-width: 60px; display: flex; align-items: center; justify-content: center; gap: 4px; border-radius: var(--radius-sm); border: 1px solid var(--border-slate); background: var(--bg-slate); color: var(--accent-cyan); height: 38px;">
+          <i data-lucide="languages" style="width:13px; height:13px;"></i>
+          <span id="langText">मराठी</span>
+        </button>
         <button class="header-sync" id="btnTheme" onclick="App.toggleTheme()" aria-label="Toggle Theme">
           <i data-lucide="sun"></i>
         </button>
@@ -47,15 +51,15 @@
         <button class="launch-btn primary" onclick="App.onFabClick()">
           <div class="launch-icon"><i data-lucide="zap"></i></div>
           <div class="launch-text">
-            <span class="launch-title">Log Delivery</span>
-            <span class="launch-sub">Log jar drop-off</span>
+            <span class="launch-title" data-t="logDeliveryBtn">Log Delivery</span>
+            <span class="launch-sub" data-t="logJarDropoff">Log jar drop-off</span>
           </div>
         </button>
         <button class="launch-btn secondary" onclick="App.navigate('Customers')">
           <div class="launch-icon"><i data-lucide="users"></i></div>
           <div class="launch-text">
-            <span class="launch-title">View Clients</span>
-            <span class="launch-sub">Addresses & Phones</span>
+            <span class="launch-title" data-t="viewClientsBtn">View Clients</span>
+            <span class="launch-sub" data-t="addressesPhones">Addresses & Phones</span>
           </div>
         </button>
       </div>
@@ -64,27 +68,27 @@
       <div class="metrics-row">
         <div class="metric-card">
           <div class="metric-val" id="statDeliveries">-</div>
-          <div class="metric-lbl"><i data-lucide="truck" class="icon-xxs"></i> Logged Today</div>
+          <div class="metric-lbl" data-t="loggedToday"><i data-lucide="truck" class="icon-xxs"></i> Logged Today</div>
         </div>
         <div class="metric-card">
           <div class="metric-val" id="statPending">-</div>
-          <div class="metric-lbl"><i data-lucide="clock" class="icon-xxs"></i> Unpaid Bills</div>
+          <div class="metric-lbl" data-t="unpaidBills"><i data-lucide="clock" class="icon-xxs"></i> Unpaid Bills</div>
         </div>
         <div class="metric-card">
           <div class="metric-val" id="statCustomers">-</div>
-          <div class="metric-lbl"><i data-lucide="user-check" class="icon-xxs"></i> Total Clients</div>
+          <div class="metric-lbl" data-t="totalClients"><i data-lucide="user-check" class="icon-xxs"></i> Total Clients</div>
         </div>
       </div>
 
       <!-- Interactive Listings -->
       <div class="section-head-pro">
-        <h3>Today's Deliveries</h3>
+        <h3 data-t="todaysDeliveries">Today's Deliveries</h3>
         <span class="head-badge" id="todayCount">0</span>
       </div>
       <div id="todayDeliveries"><div class="spinner"></div></div>
 
       <div class="section-head-pro mt-20">
-        <h3>Pending Invoices</h3>
+        <h3 data-t="pendingInvoices">Pending Invoices</h3>
       </div>
       <div id="pendingBillsList"><div class="spinner"></div></div>
     </div>
@@ -106,7 +110,7 @@
     <!-- ===== CUSTOMERS PAGE ===== -->
     <div class="page" id="pageCustomers">
       <div class="page-header-slate">
-        <h1 class="page-title">Customers</h1>
+        <h1 class="page-title" data-t="clients">Customers</h1>
         <p class="page-subtitle">Full clients directory & route maps</p>
       </div>
       <div class="search-bar-pro">
@@ -120,13 +124,13 @@
     <!-- ===== VAULT (FINANCE) PAGE ===== -->
     <div class="page" id="pageVault">
       <div class="page-header-slate">
-        <h1 class="page-title">Finance Vault</h1>
+        <h1 class="page-title" data-t="vault">Finance Vault</h1>
         <p class="page-subtitle">Monthly ledger & system grid analysis</p>
       </div>
       <!-- 👑 Executive Hero Card -->
       <div class="executive-hero" style="margin: 0 0 20px 0;">
         <div class="hero-overlay"></div>
-        <div class="hero-meta">Monthly Business Sales</div>
+        <div class="hero-meta" data-t="sales">Monthly Business Sales</div>
         <h1 class="hero-value" id="statIncome">₹0</h1>
         <div class="hero-footer">
           <div class="hero-pill">
@@ -136,10 +140,10 @@
       </div>
       <!-- Slate Segmented Controller -->
       <div class="segmented-control">
-        <button class="segment-btn active" id="segBills" onclick="App.switchVaultSubTab('bills')">
+        <button class="segment-btn active" id="segBills" onclick="App.switchVaultSubTab('bills')" data-t="invoices">
           <i data-lucide="file-text"></i> Invoices
         </button>
-        <button class="segment-btn" id="segReports" onclick="App.switchVaultSubTab('reports')">
+        <button class="segment-btn" id="segReports" onclick="App.switchVaultSubTab('reports')" data-t="reports">
           <i data-lucide="layout-grid"></i> Report Grid
         </button>
       </div>
@@ -154,7 +158,7 @@
           <h3>Invoices Register</h3>
           <span class="head-badge" id="billCount">0</span>
         </div>
-        <button class="btn btn-primary" onclick="Bills.showBulkBillingModal()" style="width:100%; margin-bottom:15px; background:linear-gradient(135deg, #3b82f6, #8b5cf6); border:none;">
+        <button class="btn btn-primary" onclick="Bills.showBulkBillingModal()" style="width:100%; margin-bottom:15px; background:linear-gradient(135deg, #3b82f6, #8b5cf6); border:none;" data-t="bulkBillingBtn">
           <i data-lucide="zap"></i> Auto Bulk Billing (Calculations)
         </button>
         <div id="billList"><div class="spinner"></div></div>
@@ -176,19 +180,19 @@
   <nav class="dock-nav">
     <button class="dock-item active" onclick="App.navigate('Dashboard')">
       <i data-lucide="layout-dashboard" class="dock-icon"></i>
-      <span class="dock-lbl">Home</span>
+      <span class="dock-lbl" data-t="home">Home</span>
     </button>
     <button class="dock-item" onclick="App.navigate('Deliveries')">
       <i data-lucide="truck" class="dock-icon"></i>
-      <span class="dock-lbl">Logs</span>
+      <span class="dock-lbl" data-t="logs">Logs</span>
     </button>
     <button class="dock-item" onclick="App.navigate('Customers')">
       <i data-lucide="users" class="dock-icon"></i>
-      <span class="dock-lbl">Clients</span>
+      <span class="dock-lbl" data-t="clients">Clients</span>
     </button>
     <button class="dock-item" onclick="App.navigate('Vault')">
       <i data-lucide="lock" class="dock-icon"></i>
-      <span class="dock-lbl">Vault</span>
+      <span class="dock-lbl" data-t="vault">Vault</span>
     </button>
   </nav>
 
@@ -211,7 +215,7 @@
   <!-- Supabase JS SDK -->
   <script src="js/vendor/supabase.min.js"></script>
   <script src="js/supabase-config.js?v=26"></script>
-  <script src="js/app.js?v=28"></script>
+  <script src="js/app.js?v=30"></script>
   <script src="js/dashboard.js?v=26"></script>
   <script src="js/deliveries.js?v=29"></script>
   <script src="js/customers.js?v=29"></script>

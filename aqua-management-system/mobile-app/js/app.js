@@ -1,8 +1,129 @@
-/* ===== App Core — Elite Minimalist Edition ===== */
-const OWNER_PIN = '1234'; 
+const translations = {
+  en: {
+    home: 'Home',
+    logs: 'Logs',
+    clients: 'Clients',
+    vault: 'Vault',
+    connected: 'Connected',
+    loggedToday: 'Logged Today',
+    unpaidBills: 'Unpaid Bills',
+    totalClients: 'Total Clients',
+    todaysDeliveries: "Today's Deliveries",
+    pendingInvoices: 'Pending Invoices',
+    logDeliveryBtn: 'Log Delivery',
+    viewClientsBtn: 'View Clients',
+    logJarDropoff: 'Log jar drop-off',
+    addressesPhones: 'Addresses & Phones',
+    noDeliveries: 'No deliveries registered yet today.',
+    allCollections: 'All collections completed!',
+    cancel: 'Cancel',
+    save: 'Save',
+    edit: 'Edit',
+    delete: 'Delete',
+    items: 'items',
+    localVaultLoaded: 'LOADED FROM LOCAL VAULT',
+    
+    // Form Inputs
+    jars: 'Jars',
+    bottles: 'Bottles',
+    
+    // Vault
+    sales: 'Monthly Business Sales',
+    bulkBillingBtn: 'Auto Bulk Billing (Calculations)',
+    invoices: 'Invoices',
+    reports: 'Report Grid'
+  },
+  mr: {
+    home: 'मुख्य पान',
+    logs: 'नोंदी',
+    clients: 'ग्राहक',
+    vault: 'तिजोरी',
+    connected: 'कनेक्टेड',
+    loggedToday: 'आजची डिलिव्हरी',
+    unpaidBills: 'थकीत बिले',
+    totalClients: 'एकूण ग्राहक',
+    todaysDeliveries: "आजच्या डिलिव्हरी नोंदी",
+    pendingInvoices: 'थकीत पावत्या',
+    logDeliveryBtn: 'डिलिव्हरी नोंदवा',
+    viewClientsBtn: 'ग्राहक यादी',
+    logJarDropoff: 'जार नोंदणी करा',
+    addressesPhones: 'पत्ते आणि फोन',
+    noDeliveries: 'आज कोणतीही डिलिव्हरी नोंदवलेली नाही.',
+    allCollections: 'सर्व वसुली पूर्ण झाली आहे!',
+    cancel: 'रद्द करा',
+    save: 'जतन करा',
+    edit: 'बदला',
+    delete: 'काढून टाका',
+    items: 'नग',
+    localVaultLoaded: 'ऑफलाईन डेटा लोड केला आहे',
+    
+    // Form Inputs
+    jars: 'जार',
+    bottles: 'बाटल्या',
+    
+    // Vault
+    sales: 'मासिक व्यवसाय विक्री',
+    bulkBillingBtn: 'ऑटो बिल गणना (एकत्रित)',
+    invoices: 'बिले / पावत्या',
+    reports: 'अहवाल तक्ता'
+  }
+};
 
 const App = {
   currentPage: 'Dashboard',
+  currentLang: localStorage.getItem('lang') || 'en',
+
+  t(key) {
+    if (translations[this.currentLang] && translations[this.currentLang][key]) {
+      return translations[this.currentLang][key];
+    }
+    return translations['en'][key] || key;
+  },
+
+  toggleLanguage() {
+    this.currentLang = this.currentLang === 'en' ? 'mr' : 'en';
+    localStorage.setItem('lang', this.currentLang);
+    this.applyLanguage();
+    
+    // Refresh page state to render dynamic values
+    if (this.currentPage === 'Dashboard') Dashboard.load();
+    else if (this.currentPage === 'Deliveries') Deliveries.load();
+    else if (this.currentPage === 'Customers') Customers.load();
+    else if (this.currentPage === 'Vault') {
+      if (document.getElementById('vaultBillsSection').style.display !== 'none') {
+        Bills.load();
+      } else {
+        Reports.load();
+      }
+    }
+  },
+
+  applyLanguage() {
+    const isMr = this.currentLang === 'mr';
+    const langBtnText = document.getElementById('langText');
+    if (langBtnText) langBtnText.textContent = isMr ? 'EN' : 'मराठी';
+
+    document.querySelectorAll('[data-t]').forEach(el => {
+      const key = el.getAttribute('data-t');
+      const translation = translations[this.currentLang][key];
+      if (translation) {
+        if (el.tagName === 'INPUT' && el.hasAttribute('placeholder')) {
+          el.setAttribute('placeholder', translation);
+        } else {
+          // Check for sub elements (like icons)
+          const icon = el.querySelector('i[data-lucide], svg');
+          if (icon) {
+            // Re-render keeping icon intact
+            const iconHTML = icon.outerHTML;
+            el.innerHTML = iconHTML + ' ' + translation;
+          } else {
+            el.textContent = translation;
+          }
+        }
+      }
+    });
+    this.refreshIcons();
+  },
 
   navigate(page, pushHistory = true) {
     // Check Owner Security Privilege for the entire consolidated Vault
@@ -232,6 +353,7 @@ document.getElementById('modal').addEventListener('click', function(e) {
 // Global Boot Engine
 document.addEventListener('DOMContentLoaded', async () => {
   App.initTheme();
+  App.applyLanguage();
   try {
     history.replaceState({ page: 'Dashboard' }, '', '');
   } catch (e) {}
