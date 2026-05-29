@@ -719,9 +719,9 @@ const Bills = {
         let successCount = 0;
         for (let cid of unbilledIds) {
             const qty = delMap[cid];
-            // Default to 40/20 if no previous history
-            const jarRate = rateMap[cid] ? rateMap[cid].jar : 40;
-            const botRate = rateMap[cid] ? rateMap[cid].bottle : 20;
+            // Default to 0 if no previous history (new customer)
+            const jarRate = rateMap[cid] ? rateMap[cid].jar : 0;
+            const botRate = rateMap[cid] ? rateMap[cid].bottle : 0;
             const jA = qty.jars * jarRate;
             const bA = qty.bottles * botRate;
             const total = jA + bA;

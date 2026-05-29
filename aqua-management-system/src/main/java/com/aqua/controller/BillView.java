@@ -1196,7 +1196,12 @@ public class BillView extends VBox {
                 jr.setText(String.valueOf(prev.getJarRate()));
                 br.setText(String.valueOf(prev.getBottleRate()));
             } else {
-                jr.setText("40.0"); br.setText("30.0");
+                // New customer — keep 0 so user must set rate, highlight with NEW tag
+                jr.setText("0"); br.setText("0");
+                nameLbl.setText("🆕 " + c.getName());
+                nameLbl.setStyle("-fx-font-weight: bold; -fx-text-fill: #e67e22;");
+                jr.setStyle("-fx-border-color: #e67e22; -fx-border-width: 2;");
+                br.setStyle("-fx-border-color: #e67e22; -fx-border-width: 2;");
             }
             
             rateFieldsMap.put(c, new TextField[]{jr, br});
