@@ -1,3 +1,5 @@
+const OWNER_PIN = '1234';
+
 const translations = {
   en: {
     home: 'Home',
