@@ -11,7 +11,7 @@
   <link rel="manifest" href="manifest.json">
   <link rel="icon" type="image/png" href="icons/icon-192.png">
   <link rel="apple-touch-icon" href="icons/icon-192.png">
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/style.css?v=26">
   <!-- Lucide Vector Icons Engine -->
   <script src="js/vendor/lucide.min.js"></script>
 </head>
@@ -26,9 +26,14 @@
           <div class="header-subtitle" id="syncStatus">Connecting...</div>
         </div>
       </div>
-      <button class="header-sync" id="btnSync" onclick="App.syncNow()" title="Refresh Cloud">
-        <i data-lucide="rotate-cw"></i>
-      </button>
+      <div style="display: flex; gap: 10px;">
+        <button class="header-sync" id="btnTheme" onclick="App.toggleTheme()" aria-label="Toggle Theme">
+          <i data-lucide="sun"></i>
+        </button>
+        <button class="header-sync" id="btnSync" onclick="App.syncAll()" aria-label="Sync Data">
+          <i data-lucide="refresh-cw"></i>
+        </button>
+      </div>
     </header>
 
     <!-- ===== DASHBOARD PAGE ===== -->
@@ -205,13 +210,13 @@
 
   <!-- Supabase JS SDK -->
   <script src="js/vendor/supabase.min.js"></script>
-  <script src="js/supabase-config.js?v=24"></script>
-  <script src="js/app.js?v=24"></script>
-  <script src="js/dashboard.js?v=24"></script>
-  <script src="js/deliveries.js?v=24"></script>
-  <script src="js/customers.js?v=24"></script>
-  <script src="js/bills.js?v=25"></script>
-  <script src="js/reports.js?v=24"></script>
+  <script src="js/supabase-config.js?v=26"></script>
+  <script src="js/app.js?v=26"></script>
+  <script src="js/dashboard.js?v=26"></script>
+  <script src="js/deliveries.js?v=26"></script>
+  <script src="js/customers.js?v=26"></script>
+  <script src="js/bills.js?v=26"></script>
+  <script src="js/reports.js?v=26"></script>
   
   <script>
     // Register service worker & fire Lucide initial rendering pass!

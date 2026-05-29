@@ -88,6 +88,28 @@ const App = {
   },
 
   // Sub-navigation handler for Vault
+  initTheme() {
+    const saved = localStorage.getItem('theme_preference');
+    if (saved === 'light') {
+      document.documentElement.classList.add('light-mode');
+      const icon = document.querySelector('#btnTheme i');
+      if (icon) icon.setAttribute('data-lucide', 'moon');
+    }
+  },
+
+  toggleTheme() {
+    const isLight = document.documentElement.classList.toggle('light-mode');
+    const icon = document.querySelector('#btnTheme i');
+    if (isLight) {
+      if (icon) icon.setAttribute('data-lucide', 'moon');
+      localStorage.setItem('theme_preference', 'light');
+    } else {
+      if (icon) icon.setAttribute('data-lucide', 'sun');
+      localStorage.setItem('theme_preference', 'dark');
+    }
+    this.refreshIcons();
+  },
+
   switchVaultSubTab(tab) {
     document.querySelectorAll('.segment-btn').forEach(b => b.classList.remove('active'));
     
@@ -203,6 +225,7 @@ document.getElementById('modal').addEventListener('click', function(e) {
 
 // Global Boot Engine
 document.addEventListener('DOMContentLoaded', async () => {
+  App.initTheme();
   const options = { weekday:'long', day:'numeric', month:'long', year:'numeric', timeZone: 'Asia/Kolkata' };
   const dateEl = document.getElementById('dashDate');
   if (dateEl) {

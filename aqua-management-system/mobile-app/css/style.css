@@ -27,6 +27,37 @@
   --safe-bottom: env(safe-area-inset-bottom, 0px);
 }
 
+html.light-mode {
+  --bg-pitch: #f8fafc;
+  --bg-slate: #ffffff;
+  --bg-slate-hover: #f1f5f9;
+  --border-slate: rgba(0, 0, 0, 0.06);
+  --border-slate-bright: rgba(0, 0, 0, 0.12);
+  
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+
+  --accent-cyan: #0284c7;
+  --accent-cyan-glow: rgba(2, 132, 199, 0.2);
+  
+  --grad-hero: linear-gradient(135deg, #e0e7ff 0%, #ffffff 100%);
+}
+
+html.light-mode .hero-value {
+  background: linear-gradient(to right, #0f172a, #334155);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+html.light-mode .app-header, html.light-mode .dock-nav {
+  background: rgba(255, 255, 255, 0.92);
+}
+
+html.light-mode .header-sync {
+  background: #f1f5f9;
+}
+
 /* Base Resets & Tech Font Base */
 * { margin:0; padding:0; box-sizing:border-box; }
 body {
@@ -38,6 +69,7 @@ body {
   letter-spacing: -0.01em;
   -webkit-tap-highlight-color: transparent;
   position: relative;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* App Container */
