@@ -108,7 +108,7 @@ const Dashboard = {
       data.todayDels.forEach(d => {
         const name = d.customers?.name || 'Customer #' + d.customer_id;
         const color = App.getAvatarColor(name);
-        html += `<div class="list-item">
+        html += `<div class="list-item" onclick="Dashboard.deleteDelivery(${d.id})">
           <div class="list-avatar" style="background:${color}">${name.charAt(0).toUpperCase()}</div>
           <div class="list-content">
             <div class="list-name">${name}</div>
@@ -148,5 +148,17 @@ const Dashboard = {
 
     // Hydrate the freshly painted vectors!
     App.refreshIcons();
+  },
+
+  async deleteDelivery(id) {
+    if (!confirm(App.currentLang === 'mr' ? 'ही डिलिव्हरी नोंद कायमची काढून टाकायची?' : 'Permanently delete this today\'s delivery entry?')) return;
+    try {
+      const res = await OfflineVault.safeWrite('DELETE', 'deliveries', null, { id });
+      if (res.error) throw res.error;
+      App.toast(App.currentLang === 'mr' ? 'डिलिव्हरी नोंद यशस्वीरीत्या काढून टाकली.' : 'Log entry removed successfully.');
+      this.load();
+    } catch (e) {
+      App.toast('Failed to delete: ' + e.message, 'warning');
+    }
   }
 };
