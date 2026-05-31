@@ -679,88 +679,148 @@ const Bills = {
     const curMonth = parseInt(document.getElementById('billMonth').value);
     const curYear = parseInt(document.getElementById('billYear').value);
     
-    // We need to fetch the unbilled list for the current month
-    const startDate = `${curYear}-${String(curMonth).padStart(2,'0')}-01`;
-    const nextM = curMonth === 12 ? 1 : curMonth + 1;
-    const nextY = curMonth === 12 ? curYear + 1 : curYear;
-    const endDate = `${nextY}-${String(nextM).padStart(2,'0')}-01`;
-    
-    const { data: dels } = await supabase.from('deliveries').select('*').gte('delivery_date', startDate).lt('delivery_date', endDate);
-    const { data: bills } = await supabase.from('bills').select('*').eq('bill_month', curMonth).eq('bill_year', curYear);
-    
-    const delMap = {};
-    (dels || []).forEach(d => {
-      if (!delMap[d.customer_id]) delMap[d.customer_id] = { jars: 0, bottles: 0 };
-      delMap[d.customer_id].jars += (d.jar_qty || 0);
-      delMap[d.customer_id].bottles += (d.bottle_qty || 0);
-    });
-    
-    const billedIds = new Set((bills || []).map(b => b.customer_id));
-    const activeIds = Object.keys(delMap).map(Number);
-    const unbilledIds = activeIds.filter(id => !billedIds.has(id));
-    
-    if (unbilledIds.length === 0) {
-      App.toast('All active customers are already billed!', 'success');
-      return;
-    }
-
-    window.executeMobileBulkBilling = async function() {
-        App.closeModal();
-        App.toast('Processing ' + unbilledIds.length + ' bills...', 'info');
-        
-        // Find previous month to fetch rates
-        const prevM = curMonth === 1 ? 12 : curMonth - 1;
-        const prevY = curMonth === 1 ? curYear - 1 : curYear;
-        const { data: prevBills } = await supabase.from('bills').select('customer_id, jar_rate, bottle_rate').eq('bill_month', prevM).eq('bill_year', prevY);
-        
-        const rateMap = {};
-        (prevBills || []).forEach(b => {
-           rateMap[b.customer_id] = { jar: b.jar_rate, bottle: b.bottle_rate };
-        });
-
-        let successCount = 0;
-        for (let cid of unbilledIds) {
-            const qty = delMap[cid];
-            // Default to 0 if no previous history (new customer)
-            const jarRate = rateMap[cid] ? rateMap[cid].jar : 0;
-            const botRate = rateMap[cid] ? rateMap[cid].bottle : 0;
-            const jA = qty.jars * jarRate;
-            const bA = qty.bottles * botRate;
-            const total = jA + bA;
-            
-            const res = await OfflineVault.safeInsert('bills', {
-              id: Math.floor(Date.now() / 1000) + successCount,
-              customer_id: cid,
-              bill_month: curMonth,
-              bill_year: curYear,
-              total_jars: qty.jars,
-              total_bottles: qty.bottles,
-              jar_rate: jarRate,
-              bottle_rate: botRate,
-              jar_amount: jA,
-              bottle_amount: bA,
-              grand_total: total,
-              status: 'PENDING',
-              generated_at: new Date().toISOString()
-            });
-            
-            if (!res.error) successCount++;
-        }
-        
-        App.toast('Bulk generation complete: ' + successCount + ' generated.', 'success');
-        Bills.load();
-    };
-
     App.showModal(`
-      <div class="modal-title"><i data-lucide="zap"></i> Auto Bulk Billing</div>
-      <div style="background:var(--bg-slate); border:1px solid var(--border-slate); border-radius:var(--radius-md); padding:20px; margin-bottom:20px; text-align:center;">
-        <i data-lucide="calculator" style="width:48px; height:48px; color:var(--accent-cyan); margin-bottom:10px;"></i>
-        <h3 style="margin:0 0 10px 0; font-size:16px; font-weight:800; color:var(--text-primary);">Generate ${unbilledIds.length} Drafts</h3>
-        <p style="font-size:12px; color:var(--text-secondary); line-height:1.5;">This will instantly convert all Open Drafts into Finalized Pending Invoices.<br><br>The system will automatically pull the customer's Jar/Bottle rates from their <strong>previous month's bill</strong>. If they are new, it defaults to ₹40/₹20.</p>
-        <p style="font-size:11px; color:var(--accent-amber); margin-top:15px; font-weight:bold;"><i data-lucide="alert-triangle" style="width:12px; height:12px;"></i> PDF generation and automatic WhatsApp Blasting must still be done on the Desktop App.</p>
+      <div style="text-align:center; padding:30px;">
+        <div class="spinner" style="margin:0 auto 15px auto;"></div>
+        <p style="font-size:12px; color:var(--text-secondary);">Calculating unbilled ledger data...</p>
       </div>
-      <button class="btn btn-primary" onclick="executeMobileBulkBilling()" style="width:100%; margin-bottom:10px; background:linear-gradient(135deg, #3b82f6, #8b5cf6); border:none;"><i data-lucide="check-circle"></i> Generate Bills Now</button>
-      <button class="btn btn-outline" onclick="App.closeModal()" style="width:100%;">Cancel</button>
     `);
+    
+    try {
+      const startDate = `${curYear}-${String(curMonth).padStart(2,'0')}-01`;
+      const nextM = curMonth === 12 ? 1 : curMonth + 1;
+      const nextY = curMonth === 12 ? curYear + 1 : curYear;
+      const endDate = `${nextY}-${String(nextM).padStart(2,'0')}-01`;
+      
+      const { data: dels } = await supabase.from('deliveries').select('*').gte('delivery_date', startDate).lt('delivery_date', endDate);
+      const { data: bills } = await supabase.from('bills').select('*').eq('bill_month', curMonth).eq('bill_year', curYear);
+      const { data: custs } = await supabase.from('customers').select('id, name');
+      
+      const custMap = {};
+      (custs || []).forEach(c => custMap[c.id] = c.name);
+      
+      const delMap = {};
+      (dels || []).forEach(d => {
+        if (!delMap[d.customer_id]) delMap[d.customer_id] = { jars: 0, bottles: 0 };
+        delMap[d.customer_id].jars += (d.jar_qty || 0);
+        delMap[d.customer_id].bottles += (d.bottle_qty || 0);
+      });
+      
+      const billedIds = new Set((bills || []).map(b => b.customer_id));
+      const activeIds = Object.keys(delMap).map(Number);
+      const unbilledIds = activeIds.filter(id => !billedIds.has(id));
+      
+      if (unbilledIds.length === 0) {
+        App.closeModal();
+        App.toast('All active customers are already billed!', 'success');
+        return;
+      }
+      
+      const prevM = curMonth === 1 ? 12 : curMonth - 1;
+      const prevY = curMonth === 1 ? curYear - 1 : curYear;
+      const { data: prevBills } = await supabase.from('bills').select('customer_id, jar_rate, bottle_rate').eq('bill_month', prevM).eq('bill_year', prevY);
+      
+      const rateMap = {};
+      (prevBills || []).forEach(b => {
+         rateMap[b.customer_id] = { jar: b.jar_rate, bottle: b.bottle_rate };
+      });
+      
+      window.executeMobileBulkBilling = async function() {
+          App.closeModal();
+          App.toast('Processing ' + unbilledIds.length + ' bills...', 'info');
+          
+          let successCount = 0;
+          for (let cid of unbilledIds) {
+              const qty = delMap[cid];
+              const jarRate = parseFloat(document.getElementById(`jar-rate-${cid}`).value) || 0;
+              const botRate = parseFloat(document.getElementById(`bot-rate-${cid}`).value) || 0;
+              
+              const jA = qty.jars * jarRate;
+              const bA = qty.bottles * botRate;
+              const total = jA + bA;
+              
+              const res = await OfflineVault.safeInsert('bills', {
+                id: Math.floor(Date.now() / 1000) + successCount,
+                customer_id: cid,
+                bill_month: curMonth,
+                bill_year: curYear,
+                total_jars: qty.jars,
+                total_bottles: qty.bottles,
+                jar_rate: jarRate,
+                bottle_rate: botRate,
+                jar_amount: jA,
+                bottle_amount: bA,
+                grand_total: total,
+                status: 'PENDING',
+                generated_at: new Date().toISOString()
+              });
+              
+              if (!res.error) successCount++;
+          }
+          
+          App.toast('Bulk generation complete: ' + successCount + ' generated.', 'success');
+          Bills.load();
+      };
+      
+      const listHtml = unbilledIds.map(cid => {
+        const qty = delMap[cid];
+        const name = custMap[cid] || `Customer #${cid}`;
+        const prevJarRate = rateMap[cid] ? rateMap[cid].jar : 40;
+        const prevBotRate = rateMap[cid] ? rateMap[cid].bottle : 30;
+        
+        return `
+          <tr style="border-bottom:1px solid var(--border-slate-bright);">
+            <td style="padding:10px 4px; font-weight:bold; color:var(--text-primary);">
+              <div style="max-width:130px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${name}</div>
+              <div style="font-size:10px; color:var(--text-secondary); font-weight:normal;">
+                Delivered: ${qty.jars} Jars / ${qty.bottles} Bottles
+              </div>
+            </td>
+            <td style="padding:10px 4px; text-align:center;">
+              <div style="display:inline-flex; align-items:center; gap:2px;">
+                <span style="font-size:10px; color:var(--text-secondary);">₹</span>
+                <input type="number" id="jar-rate-${cid}" value="${prevJarRate}" style="width:52px; padding:5px; border:1px solid var(--border-slate); border-radius:4px; background:var(--bg-card); color:var(--text-primary); text-align:center; font-size:12px; font-weight:bold;">
+              </div>
+            </td>
+            <td style="padding:10px 4px; text-align:center;">
+              <div style="display:inline-flex; align-items:center; gap:2px;">
+                <span style="font-size:10px; color:var(--text-secondary);">₹</span>
+                <input type="number" id="bot-rate-${cid}" value="${prevBotRate}" style="width:52px; padding:5px; border:1px solid var(--border-slate); border-radius:4px; background:var(--bg-card); color:var(--text-primary); text-align:center; font-size:12px; font-weight:bold;">
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+      
+      App.showModal(`
+        <div class="modal-title"><i data-lucide="zap"></i> Auto Bulk Billing</div>
+        <div style="font-size:12px; color:var(--text-secondary); margin-bottom:15px; text-align:center; line-height:1.4;">
+          Review and customize monthly rates below before generating <strong>${unbilledIds.length}</strong> invoices.
+        </div>
+        
+        <div style="max-height:280px; overflow-y:auto; border:1px solid var(--border-slate); border-radius:var(--radius-md); background:var(--bg-slate); padding:4px 8px; margin-bottom:15px;">
+          <table style="width:100%; border-collapse:collapse; font-size:11px; text-align:left;">
+            <thead>
+              <tr style="border-bottom:2px solid var(--border-slate); color:var(--text-secondary); font-weight:800; font-size:10px;">
+                <th style="padding:6px 4px;">CUSTOMER</th>
+                <th style="padding:6px 4px; text-align:center;">JAR RATE</th>
+                <th style="padding:6px 4px; text-align:center;">BOTTLE RATE</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${listHtml}
+            </tbody>
+          </table>
+        </div>
+        
+        <button class="btn btn-primary" onclick="executeMobileBulkBilling()" style="width:100%; margin-bottom:10px; background:linear-gradient(135deg, #3b82f6, #8b5cf6); border:none;"><i data-lucide="check-circle"></i> Generate ${unbilledIds.length} Invoices</button>
+        <button class="btn btn-outline" onclick="App.closeModal()" style="width:100%;">Cancel</button>
+      `);
+      
+      if (window.lucide) window.lucide.createIcons();
+    } catch(e) {
+      App.closeModal();
+      App.toast('Failed calculation preview: ' + e.message, 'warning');
+    }
   }
 };
