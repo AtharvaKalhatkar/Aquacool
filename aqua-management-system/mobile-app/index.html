@@ -216,8 +216,8 @@
   <script src="js/vendor/supabase.min.js"></script>
   <script src="js/supabase-config.js?v=26"></script>
   <script src="js/app.js?v=36"></script>
-  <script src="js/dashboard.js?v=38"></script>
-  <script src="js/deliveries.js?v=29"></script>
+  <script src="js/dashboard.js?v=39"></script>
+  <script src="js/deliveries.js?v=30"></script>
   <script src="js/customers.js?v=29"></script>
   <script src="js/bills.js?v=37"></script>
   <script src="js/reports.js?v=31"></script>
@@ -229,7 +229,20 @@
     });
 
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('sw.js').then(() => console.log('SW registered')).catch(e => console.log('SW failed:', e));
+      if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        navigator.serviceWorker.getRegistrations().then(registrations => {
+          for (let r of registrations) {
+            r.unregister().then(() => {
+              caches.keys().then(names => {
+                for (let name of names) caches.delete(name);
+              });
+              console.log('SW & Caches cleared for local dev.');
+            });
+          }
+        });
+      } else {
+        navigator.serviceWorker.register('sw.js').then(() => console.log('SW registered')).catch(e => console.log('SW failed:', e));
+      }
     }
   </script>
 </body>
