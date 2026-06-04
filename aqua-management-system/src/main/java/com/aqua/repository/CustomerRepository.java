@@ -10,17 +10,19 @@ import java.util.List;
 public class CustomerRepository {
 
     public boolean insert(Customer customer) {
-        String sql = "INSERT INTO customers (name, address, mobile, route, email) VALUES (?, ?, ?, ?, ?)";
-        try (PreparedStatement pstmt = DatabaseConnection.getConnection().prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            pstmt.setString(1, customer.getName());
-            pstmt.setString(2, customer.getAddress());
-            pstmt.setString(3, customer.getMobile());
-            pstmt.setString(4, customer.getRoute());
-            pstmt.setString(5, customer.getEmail());
+        int uniqueId = (int) (System.currentTimeMillis() / 1000);
+        customer.setId(uniqueId);
+        String sql = "INSERT INTO customers (id, name, address, mobile, route, email, sync_status) VALUES (?, ?, ?, ?, ?, ?, 'PENDING')";
+        try (PreparedStatement pstmt = DatabaseConnection.getConnection().prepareStatement(sql)) {
+            pstmt.setInt(1, uniqueId);
+            pstmt.setString(2, customer.getName());
+            pstmt.setString(3, customer.getAddress());
+            pstmt.setString(4, customer.getMobile());
+            pstmt.setString(5, customer.getRoute());
+            pstmt.setString(6, customer.getEmail());
             int rows = pstmt.executeUpdate();
             if (rows > 0) {
-                ResultSet keys = pstmt.getGeneratedKeys();
-                if (keys.next()) customer.setId(keys.getInt(1));
+                new Thread(com.aqua.service.SyncEngine::runSync).start();
                 return true;
             }
         } catch (SQLException e) { System.err.println("Error inserting customer: " + e.getMessage()); }
@@ -36,12 +38,22 @@ public class CustomerRepository {
             pstmt.setString(4, customer.getRoute());
             pstmt.setString(5, customer.getEmail());
             pstmt.setInt(6, customer.getId());
-            return pstmt.executeUpdate() > 0;
+            boolean ok = pstmt.executeUpdate() > 0;
+            if (ok) {
+                new Thread(com.aqua.service.SyncEngine::runSync).start();
+            }
+            return ok;
         } catch (SQLException e) { System.err.println("Error updating customer: " + e.getMessage()); }
         return false;
     }
 
     public boolean delete(int id) {
+        try {
+            // Mark as pending delete for cloud sync first
+            com.aqua.database.DatabaseConnection.getConnection().createStatement().executeUpdate("UPDATE customers SET sync_status='PENDING' WHERE id=" + id);
+            new Thread(com.aqua.service.SyncEngine::runSync).start();
+        } catch (Exception ex) {}
+
         String sql = "DELETE FROM customers WHERE id=?";
         try (PreparedStatement pstmt = DatabaseConnection.getConnection().prepareStatement(sql)) {
             pstmt.setInt(1, id);

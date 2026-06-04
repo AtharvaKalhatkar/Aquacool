@@ -11,16 +11,18 @@ import java.util.List;
 public class DeliveryRepository {
 
     public boolean insert(Delivery delivery) {
-        String sql = "INSERT INTO deliveries (customer_id, delivery_date, jar_qty, bottle_qty) VALUES (?, ?, ?, ?)";
-        try (PreparedStatement pstmt = DatabaseConnection.getConnection().prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            pstmt.setInt(1, delivery.getCustomerId());
-            pstmt.setString(2, delivery.getDeliveryDate().toString());
-            pstmt.setInt(3, delivery.getJarQty());
-            pstmt.setInt(4, delivery.getBottleQty());
+        int uniqueId = (int) (System.currentTimeMillis() / 1000);
+        delivery.setId(uniqueId);
+        String sql = "INSERT INTO deliveries (id, customer_id, delivery_date, jar_qty, bottle_qty, sync_status) VALUES (?, ?, ?, ?, ?, 'PENDING')";
+        try (PreparedStatement pstmt = DatabaseConnection.getConnection().prepareStatement(sql)) {
+            pstmt.setInt(1, uniqueId);
+            pstmt.setInt(2, delivery.getCustomerId());
+            pstmt.setString(3, delivery.getDeliveryDate().toString());
+            pstmt.setInt(4, delivery.getJarQty());
+            pstmt.setInt(5, delivery.getBottleQty());
             int rows = pstmt.executeUpdate();
             if (rows > 0) {
-                ResultSet keys = pstmt.getGeneratedKeys();
-                if (keys.next()) delivery.setId(keys.getInt(1));
+                new Thread(com.aqua.service.SyncEngine::runSync).start();
                 return true;
             }
         } catch (SQLException e) { System.err.println("Error inserting delivery: " + e.getMessage()); }
@@ -28,6 +30,13 @@ public class DeliveryRepository {
     }
 
     public boolean delete(int id) {
+        // Mark as pending delete for cloud database sync
+        try {
+            // First push a delete matching condition to Supabase
+            com.aqua.database.DatabaseConnection.getConnection().createStatement().executeUpdate("UPDATE deliveries SET sync_status='PENDING' WHERE id=" + id);
+            new Thread(com.aqua.service.SyncEngine::runSync).start();
+        } catch (Exception ex) {}
+
         String sql = "DELETE FROM deliveries WHERE id=?";
         try (PreparedStatement pstmt = DatabaseConnection.getConnection().prepareStatement(sql)) {
             pstmt.setInt(1, id);

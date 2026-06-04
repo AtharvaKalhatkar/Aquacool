@@ -34,28 +34,33 @@ public class BillRepository {
                 boolean ok = pstmt.executeUpdate() > 0;
                 pstmt.close();
                 System.out.println("Bill updated for customer " + bill.getCustomerId() + ": " + ok);
+                if (ok) {
+                    new Thread(com.aqua.service.SyncEngine::runSync).start();
+                }
                 return ok;
             } else {
-                String sql = "INSERT INTO bills (customer_id, bill_month, bill_year, total_jars, total_bottles, jar_rate, bottle_rate, jar_amount, bottle_amount, grand_total, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-                PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
-                pstmt.setInt(1, bill.getCustomerId());
-                pstmt.setInt(2, bill.getBillMonth());
-                pstmt.setInt(3, bill.getBillYear());
-                pstmt.setInt(4, bill.getTotalJars());
-                pstmt.setInt(5, bill.getTotalBottles());
-                pstmt.setDouble(6, bill.getJarRate());
-                pstmt.setDouble(7, bill.getBottleRate());
-                pstmt.setDouble(8, bill.getJarAmount());
-                pstmt.setDouble(9, bill.getBottleAmount());
-                pstmt.setDouble(10, bill.getGrandTotal());
-                pstmt.setString(11, bill.getStatus());
+                int uniqueId = (int) (System.currentTimeMillis() / 1000);
+                bill.setId(uniqueId);
+                String sql = "INSERT INTO bills (id, customer_id, bill_month, bill_year, total_jars, total_bottles, jar_rate, bottle_rate, jar_amount, bottle_amount, grand_total, status, sync_status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'PENDING')";
+                PreparedStatement pstmt = conn.prepareStatement(sql);
+                pstmt.setInt(1, uniqueId);
+                pstmt.setInt(2, bill.getCustomerId());
+                pstmt.setInt(3, bill.getBillMonth());
+                pstmt.setInt(4, bill.getBillYear());
+                pstmt.setInt(5, bill.getTotalJars());
+                pstmt.setInt(6, bill.getTotalBottles());
+                pstmt.setDouble(7, bill.getJarRate());
+                pstmt.setDouble(8, bill.getBottleRate());
+                pstmt.setDouble(9, bill.getJarAmount());
+                pstmt.setDouble(10, bill.getBottleAmount());
+                pstmt.setDouble(11, bill.getGrandTotal());
+                pstmt.setString(12, bill.getStatus());
                 int rows = pstmt.executeUpdate();
-                if (rows > 0) {
-                    ResultSet keys = pstmt.getGeneratedKeys();
-                    if (keys.next()) bill.setId(keys.getInt(1));
-                }
                 pstmt.close();
                 System.out.println("Bill inserted for customer " + bill.getCustomerId() + ", id=" + bill.getId());
+                if (rows > 0) {
+                    new Thread(com.aqua.service.SyncEngine::runSync).start();
+                }
                 return rows > 0;
             }
         } catch (SQLException e) {
@@ -73,6 +78,9 @@ public class BillRepository {
             pstmt.setInt(2, billId);
             boolean ok = pstmt.executeUpdate() > 0;
             pstmt.close();
+            if (ok) {
+                new Thread(com.aqua.service.SyncEngine::runSync).start();
+            }
             return ok;
         } catch (SQLException e) { System.err.println("Error updating status: " + e.getMessage()); }
         return false;

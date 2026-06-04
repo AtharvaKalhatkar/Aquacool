@@ -40,6 +40,8 @@ public class DatabaseConnection {
             connection = DriverManager.getConnection(URL);
             try (Statement stmt = connection.createStatement()) {
                 stmt.execute("PRAGMA foreign_keys = ON");
+                stmt.execute("PRAGMA journal_mode = WAL");
+                stmt.execute("PRAGMA busy_timeout = 5000");
             }
             if (!initialized) {
                 initializeDatabase();

@@ -1,12 +1,12 @@
 @echo off
 title Aqua Management System
 echo Starting Aqua Management System...
-echo Do not close this window while the app is running.
+echo Please wait while the system resolves dependencies and launches...
 
-java -jar target\aqua-management-system-1.0.0.jar
+call "%~dp0mvnw.cmd" javafx:run
 
 if %ERRORLEVEL% NEQ 0 (
     echo.
-    echo Application exited with an error. Please check if Java is installed.
+    echo Application exited with an error.
     pause
 )

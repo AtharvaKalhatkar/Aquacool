@@ -73,8 +73,11 @@ public class DashboardView extends VBox {
             }
         });
 
-        javafx.scene.control.Button syncBtn = new javafx.scene.control.Button("🔄 Force Sync");
-        syncBtn.setStyle("-fx-background-color: #0069b4; -fx-text-fill: white; -fx-cursor: hand; -fx-font-weight: bold; -fx-font-size: 12px; -fx-padding: 6 12; -fx-background-radius: 6;");
+        Label syncStatus = new Label("☁️ Auto-Synced");
+        syncStatus.setStyle("-fx-background-color: #e8f5e9; -fx-text-fill: #27ae60; -fx-font-weight: bold; -fx-font-size: 11px; -fx-padding: 6 12; -fx-background-radius: 6; -fx-border-color: rgba(39,174,96,0.2); -fx-border-width: 1;");
+
+        javafx.scene.control.Button syncBtn = new javafx.scene.control.Button("🔄 Sync Now");
+        syncBtn.setStyle("-fx-background-color: #0069b4; -fx-text-fill: white; -fx-cursor: hand; -fx-font-weight: bold; -fx-font-size: 11px; -fx-padding: 6 12; -fx-background-radius: 6;");
         syncBtn.setOnAction(e -> {
             syncBtn.setDisable(true);
             syncBtn.setText("⌛ Syncing...");
@@ -87,20 +90,20 @@ public class DashboardView extends VBox {
             };
             task.setOnSucceeded(ev -> {
                 syncBtn.setDisable(false);
-                syncBtn.setText("🔄 Force Sync");
+                syncBtn.setText("🔄 Sync Now");
                 refreshData();
-                com.aqua.util.AlertUtil.showSuccess("Cloud Sync Completed Successfully! ✅\nYour computer and phone are now perfectly aligned.");
+                com.aqua.util.AlertUtil.showSuccess("Cloud database sync completed successfully! ✅\nYour computer is now perfectly updated with all phone logs.");
             });
             task.setOnFailed(ev -> {
                 syncBtn.setDisable(false);
-                syncBtn.setText("🔄 Force Sync");
+                syncBtn.setText("🔄 Sync Now");
                 Throwable ex = task.getException();
-                com.aqua.util.AlertUtil.showError("Sync Failed", ex != null ? ex.getMessage() : "Unknown communication error.");
+                com.aqua.util.AlertUtil.showError("Sync Failed", ex != null ? ex.getMessage() : "Unknown cloud communication error.");
             });
             new Thread(task).start();
         });
 
-        HBox actionBox = new HBox(10, backupBtn, syncBtn);
+        HBox actionBox = new HBox(10, backupBtn, syncBtn, syncStatus);
         actionBox.setAlignment(Pos.CENTER_RIGHT);
         
         Label tip = new Label("Alt+1-5 Navigate | Tab/Enter Form | ↑↓ Lists");
