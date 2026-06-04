@@ -108,7 +108,7 @@ const Dashboard = {
       data.todayDels.forEach(d => {
         const name = d.customers?.name || 'Customer #' + d.customer_id;
         const color = App.getAvatarColor(name);
-        const timeStr = d.created_at ? new Date(d.created_at).toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit', hour12:true, timeZone:'Asia/Kolkata' }) : '';
+        const timeStr = d.created_at ? new Date(d.created_at + 'Z').toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit', hour12:true, timeZone:'Asia/Kolkata' }) : '';
         html += `<div class="list-item" onclick="Dashboard.deleteDelivery(${d.id})">
           <div class="list-avatar" style="background:${color}">${name.charAt(0).toUpperCase()}</div>
           <div class="list-content">
